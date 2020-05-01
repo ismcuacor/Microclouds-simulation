@@ -4,14 +4,19 @@ using namespace ns3;
 
 static std::set< ns3::Ptr<SmartNode> > resent_nodes;
 
+/***
+* The mergeMicroclouds method is called whenever two microclouds have become too similar, so that the information is merged together into
+* the same provider. This is done to avoid having too redundant information which increases energy consumption. The process of merging microclouds
+* is decided upon a heuristic, which needs to be decided when called.
+**/
 std::pair< ns3::Ptr<SmartMigration>, std::set< ns3::Ptr<SmartGraph> > >  mergeMicroclouds(ns3::Ptr<SmartGraph> microcloud, std::set< ns3::Ptr<SmartGraph> > microcloudsList)
 {
-        //ns3::Ptr<SmartMigration> migration = new SmartMigration(), migrationAux;
         ns3::Ptr<SmartMigration> migration, migrationAux;
 
         ns3::Ptr<SmartGraph> microcloudResult;
         std::set< ns3::Ptr<SmartGraph> > microcloudListResult(microcloudsList);
-        //migration->setEC(std::numeric_limits<float>::max());
+
+	// Select which nodes will be migrated
 	for (std::set< ns3::Ptr<SmartGraph> >::iterator it = microcloudsList.begin(); it != microcloudsList.end(); ++it)
         {
 		migrationAux = microcloud->merge(*it);
@@ -23,18 +28,15 @@ std::pair< ns3::Ptr<SmartMigration>, std::set< ns3::Ptr<SmartGraph> > >  mergeMi
                 }
         }
 
-/*	if (migration == NULL || migration->getEC() == 0 || migration->getEC() == std::numeric_limits<float>::max())
+	// To ensure that no error was made
+	if (migration == NULL || migration->getEC() == 0 || migration->getEC() == std::numeric_limits<float>::max())
 		throw std::invalid_argument( "Generated empty Migration" );	
-*/
-
-	//std::pair < ns3::Ptr<SmartMigration>, std::set< ns3::Ptr<SmartGraph> > > aux;
+	
 	if (migration != NULL) {
 		microcloud->Migrate(migration);
-	
 		microcloudsList.insert(microcloud);
-
         	microcloudsList.erase(microcloudResult);
-	//	aux = std::pair < ns3::Ptr<SmartMigration>, std::set< ns3::Ptr<SmartGraph> > > (migration, microcloudsList);
+
 		std::pair < ns3::Ptr<SmartMigration>, std::set< ns3::Ptr<SmartGraph> > > aux(migration, microcloudsList);
 
 		return aux;
@@ -42,38 +44,6 @@ std::pair< ns3::Ptr<SmartMigration>, std::set< ns3::Ptr<SmartGraph> > >  mergeMi
 
 	return std::pair < ns3::Ptr<SmartMigration>, std::set< ns3::Ptr<SmartGraph> > >();
 }
-
-/*
-void DEEPACC::onNewSmartNode (Ptr<SmartNet::SmartNode> node)
-{
-	Ptr<SmartNet::SmartMigration> migration = new SmartNet::SmartMigration();
-	Ptr<SmartNet::SmartMigration> migrationAux;
-	Ptr<SmartNet::SmartProvider> center;
-
-	placeSmartNodeInList(node);
-
-	if(!node->isProvider())
-	{
-		migration->setEC(std::numeric_limits<float>::max());
-
-		for (std::map< Ptr<SmartNet::SmartNode>, int >::iterator it = Nodes.begin(); it != Nodes.end(); ++it)
-		{
-			center = new SmartProvider(it->first->getNode());
-			if (center != node) 
-			{
-				migrationAux = Graph.merge(center, node);
-				if (migrationAux->getEC() < migration->getEC() && migrationAux->getEC() > 0)
-				{
-					migration = migrationAux;
-				}
-			}
-		}
-
-		Graph.Migrate(migration);
-	}
-
-}
-*/
 
 void DEEPACC::getEdges(ns3::Ptr<SmartNet::SmartNode> node1, ns3::Ptr<SmartNet::SmartNode> node2)
 {
@@ -91,25 +61,14 @@ void DEEPACC::onNewSmartNode (ns3::Ptr<SmartNet::SmartGraph> graphIn, Ptr<SmartN
 	{
 		graphIn = new SmartGraph(node);
 	} else {
+		//For logging purposes
 		printf("%d\n", graphIn->getEdges().size());
 		ns3::Ptr<SmartMigration> mig = graphIn->merge(node);
+		
 		//If there is no resulting merge, there was an error
 		if (mig->getMigrations().size() == 0)
 		         throw std::invalid_argument("NULL MERGE\n");
 		graphIn->Migrate(mig);
-		
-	
-		//std::set< ns3::Ptr<SmartGraph> > setAux;
-
-		//setAux.insert(new SmartGraph (node));
-	//	std::pair< ns3::Ptr<SmartMigration>, std::set< ns3::Ptr<SmartGraph> > >  merged = mergeMicroclouds(graphIn, setAux);
-
-		//If there is no resulting merge, there was an error
-		//if (merged.second.size() == 0)
-		//         throw std::invalid_argument("NULL MERGE\n");
-
-	        //graphIn->Migrate(merged.first);
-		//selectProvider(graphIn);
 	}
 }
 
@@ -139,6 +98,11 @@ bool DEEPACC::onBrokenLink(Ptr<SmartNet::SmartNode> node)
 	return false;
 }
 
+/***
+* Once we have a graph, the process is using a depth search first algorithm to find the most suitable path between each node and the provider
+* reducing the number of paths open. To reduce the computation time, we used a heuristic-based trim, so that the minimum threshold is 
+* surpassed, we don't keep searching.
+**/
 void DEEPACC::buildMicrocloud (std::set< ns3::Ptr<SmartNet::SmartGraph> > microclouds, Ptr<SmartNet::SmartMigration> migrations)
 {
 	pathLenght = std::numeric_limits<float>::max();
@@ -181,6 +145,7 @@ void DEEPACC::buildMicrocloud (std::set< ns3::Ptr<SmartNet::SmartGraph> > microc
 	}
 }
 
+// Route function
 ns3::Ptr<SmartNet::SmartGraph> DEEPACC::Run (ns3::Ptr<SmartNet::SmartGraph> graphIn)
 {      
 	std::set< ns3::Ptr<SmartNet::SmartNode> > graphNodes = graphIn->getNodes();
@@ -210,7 +175,7 @@ ns3::Ptr<SmartNet::SmartGraph> DEEPACC::Run (ns3::Ptr<SmartNet::SmartGraph> grap
 	return graphResult;
 }
 
-//void DEEPACC::RunNow (ns3::Ptr<SmartNet::SmartGraph> graphIn, std::set< ns3::Ptr<SmartNode> > talking_nodes,  ns3::Ptr<SmartGraph> graph)
+// Route function
 ns3::Ptr<SmartGraph> DEEPACC::RunNow (ns3::Ptr<SmartNet::SmartGraph> graphIn, std::set< ns3::Ptr<SmartNode> > talking_nodes)
 {
 
@@ -262,26 +227,15 @@ ns3::Ptr<SmartGraph> DEEPACC::RunNow (ns3::Ptr<SmartNet::SmartGraph> graphIn, st
 	return graphResult;
 }
 
+// Route function
 ns3::Ptr<SmartNet::SmartGraph> DEEPACC::Run (ns3::Ptr<SmartNet::SmartGraph> graphIn, std::set< ns3::Ptr<SmartNode> > talking_nodes)
 {
 	std::set< ns3::Ptr<SmartNet::SmartNode> > graphNodesAux = graphIn->getNodes(), graphNodes;
-	
 	std::set< ns3::Ptr<SmartNet::SmartNode> >::iterator error = graphNodesAux.end(), nodeIterator;
-
-//	for (std::set< ns3::Ptr<SmartNode> >::iterator talkingIterator = talking_nodes.begin(); talkingIterator != talking_nodes.end(); ++talkingIterator)
-//	{
-//		nodeIterator = graphNodesAux.find(*talkingIterator);
-//		if (nodeIterator != error)
-//			graphNodes.insert(*nodeIterator);
-//	}
-
-//	if (talking_nodes.size() != graphNodes.size())
-//		throw std::invalid_argument( "Error while parsing talking nodes" );	
 
 	graphNodes = talking_nodes;
         
 	std::set< ns3::Ptr<SmartNet::SmartGraph> >  microcloudsList;
-
 	ns3::Ptr<SmartNet::SmartGraph> graphResult;
 
         ns3::Ptr<SmartNet::SmartMigration> migrations = new SmartNet::SmartMigration ();
@@ -307,6 +261,7 @@ ns3::Ptr<SmartNet::SmartGraph> DEEPACC::Run (ns3::Ptr<SmartNet::SmartGraph> grap
 	return graphResult;
 }
 
+// Route function
 ns3::Ptr<SmartNet::SmartGraph> DEEPACC::Run (ns3::Ptr<SmartNet::SmartGraph> graphIn, std::set< ns3::Ptr<SmartNode> > talking_nodes, int mcloud)
 {
 	std::set< ns3::Ptr<SmartNet::SmartNode> > graphNodesAux;
@@ -349,10 +304,10 @@ ns3::Ptr<SmartNet::SmartGraph> DEEPACC::Run (ns3::Ptr<SmartNet::SmartGraph> grap
 	return graphResult;
 }
 
+//To Improve
 void DEEPACC::placeSmartNodeInList (ns3::Ptr<SmartNet::SmartNode> node)
 {
-//TODO
-/*	std::map< ns3::Ptr<SmartNet::SmartNode>, int> SmartNodesCopy = Nodes;
+	std::map< ns3::Ptr<SmartNet::SmartNode>, int> SmartNodesCopy = Nodes;
 	SmartNet::SmartGraph microAux(node);
 
 	SmartMigration migration;
@@ -368,14 +323,13 @@ void DEEPACC::placeSmartNodeInList (ns3::Ptr<SmartNet::SmartNode> node)
 
 	if(it->first == node)
 		migration.Migrate();
-*/
 }
 
 void DEEPACC::onDeletedSmartNode()
 {
 	for (std::set< Ptr<SmartNet::SmartNode> >::iterator it = OrphanNodes.begin(); it != OrphanNodes.end(); ++it )
 	{
-		//onNewSmartNode(*it);
+		onNewSmartNode(*it);
 	}
 }
 
