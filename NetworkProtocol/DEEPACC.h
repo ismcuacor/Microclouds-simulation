@@ -6,7 +6,10 @@
 
 using namespace ns3;
 
+// All nodes in the system
 std::map< Ptr<SmartNet::SmartNode>, int> Nodes;
+
+// Nodes which have lost their microcloud
 std::set< Ptr<SmartNet::SmartNode> > OrphanNodes;
 
 std::pair < ns3::Ptr<SmartMigration>, std::set< ns3::Ptr<SmartGraph> > > mergeMicroclouds(ns3::Ptr<SmartGraph> microcloud, std::set< ns3::Ptr<SmartGraph> > microcloudsList);
