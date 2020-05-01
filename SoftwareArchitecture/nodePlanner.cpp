@@ -36,8 +36,7 @@ class NodePlanning
 		        m_dataRate =  ns3::DataRate ("1Mbps");
 		        m_socket = ns3::Socket::CreateSocket (node, ns3::UdpSocketFactory::GetTypeId ());
 		        r_socket = ns3::Socket::CreateSocket (node, ns3::UdpSocketFactory::GetTypeId ());
-		        //recvSink->SetIpRecvTos (ipRecvTos);
-		        //recvSink->SetIpRecvTtl (ipRecvTtl);
+
 		        ns3::InetSocketAddress r_local = ns3::InetSocketAddress (ns3::Ipv4Address::GetAny (), 4477);
 		        ns3::InetSocketAddress local = ns3::InetSocketAddress (address, 4478);
 		        r_socket->SetRecvCallback (ns3::MakeCallback (&ReceivePacket, this));
