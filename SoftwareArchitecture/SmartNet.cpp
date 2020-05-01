@@ -318,12 +318,6 @@ void SmartNode::ReceivePacketA( ns3::Ptr<ns3::Socket> socket )
 
 		lenghtAux = lenght + 1 - 48;
 
-		/*if (dest == NULL)
-			throw std::invalid_argument( " Error while receiving destination tag " );
-		if (lenghtAux == NULL)
-			throw std::invalid_argument( " Error while receiving lenght tag " );
-		*/
-
 		if (dest != NULL && lenghtAux != NULL)
 		{
 			if(packet->PeekPacketTag(tag))
@@ -395,36 +389,6 @@ void SmartNode::ReceivePacketA( ns3::Ptr<ns3::Socket> socket )
 	} 
 }
 
-/*void SmartProvider::ReceivePacketA( ns3::Ptr<ns3::Socket> socket )
-{ 
-	if(!this->wasVisited())// No recuerdo porque esto && destNodeGlobal != NULL) 
-	{
-		this->setVisited(true);
-		ns3::Ptr<ns3::Packet> packet = socket->Recv ();  
-
-	        uint32_t id = this->getNode()->GetId();
-	        LongTag tag;
-	        tag.SetSimpleValue(id);
-	
-		if(packet->PeekPacketTag(tag))
-		{
-			printf("AQUI\n");
-			exit(-1);
-		}
-	
-		this->buffer += packet->GetSize();
-
-		if (destNodeGlobal.count(this))	
-			//this->Find_Path ( destNodeGlobal, false, std::set< ns3::Ptr<SmartNode> > (), 1+packet->GetSize());
-			;
-		else
-		{
-			printf("END %f\n", packet->GetSize());
-			exit (-1);
-		}
-	}
-}*/
-
 int SmartNode::findSmartNodeRef ()
 {
 	int result = -1;
@@ -474,7 +438,6 @@ void SmartNode::Schedule_Send (std::list<float> times, std::list<int> sizes)//ns
 		}
 
 		address = interfacestable[dest][aux]->GetAddress(0);
-		//ns3::Simulator::Schedule(ns3::Simulator::Now(), &SmartNode::SetupNow2, this, address);
 		SmartNode::SetupNow2 (address);
 
 			while (itTime != times.end() && itSize != sizes.end() )
@@ -488,60 +451,6 @@ void SmartNode::Schedule_Send (std::list<float> times, std::list<int> sizes)//ns
 			}
 	}
 }
-
-/*
-void SmartNode::Schedule_Send ()//ns3::Ptr<SmartNode> destNode)
-{
-	ns3::Ptr<SmartNode> destNode = prov2.find(this->getMCloud())->second;
-	std::set<ns3::Ptr<SmartNode> > nodes = graph2->getNodes();
-	std::set<ns3::Ptr <SmartNode> > Neighbors = destNode->getNeighbors();	
-	ns3::Ipv4Address address;
-	std::list<float>::iterator itTime;
-	std::list<int>::iterator itSize;
-
-	int source = findSmartNodeRef ();
-	int dest = destNode->findSmartNodeRef ();
-	int aux;
-	
-	itTime = this->times.begin();
-	itSize = this->sizes.begin();
-	ns3::Ptr<ns3::Packet> pkt;
-
-	if (source == -1)
-	{
-		printf("Wrong Source\n");
-		exit(-1);
-	}
-
-	if (dest == -1)
-	{
-		std::cout << "Wrong dest " << destNode << std::endl;
-		exit(-1);
-	}
-
-	for (std::set<ns3::Ptr <SmartNode> >::iterator it2 = Neighbors.begin(); it2 != Neighbors.end(); ++it2)
-	{
-		if (nodes.find(*it2) != nodes.end())
-		{
-			aux = (*it2)->findSmartNodeRef ();
-			break;
-		}
-	}
-
-	address = interfacestable[dest][aux]->GetAddress(0);
-	ns3::Simulator::Schedule(ns3::Simulator::Now(), &SmartNode::SetupNow2, this, address);
-
-	while (itTime != times.end() && itSize != sizes.end() )
-	{
-		pkt = ns3::Create<ns3::Packet> (*itSize);
-		ns3::Simulator::Schedule(ns3::Seconds (*itTime), &SmartNode::Send_Packet_Now, this, destNode, pkt, address);
-
-		itTime++;
-	 	itSize++;
-		//this->Send_Packet_Now (destNode, pkt, address);
-	}
-}
-*/
 
 void SmartNode::addRepeat (ns3::Ptr<SmartNode> node)
 {
@@ -598,15 +507,11 @@ void SmartNode::SetupNow (ns3::Ptr<SmartNode> smNode, ns3::Ipv4Address address)
         //Setup Receiver
         ns3::Ptr<ns3::Socket> recvSink = ns3::Socket::CreateSocket (node2, ns3::UdpSocketFactory::GetTypeId ());
         ns3::InetSocketAddress r_local = ns3::InetSocketAddress (ns3::Ipv4Address::GetAny (), port);
-        //recvSink->SetIpRecvTos (ipRecvTos);
-        //recvSink->SetIpRecvTtl (ipRecvTtl);
-
+ 
         ns3::Callback<void, ns3::Ptr<ns3::Socket> > socketCb;
 
         socketCb = ns3::MakeCallback (&SmartNode::ReceivePacketA, smNode);
-        //socketCb = ns3::MakeCallback (Receive);
-        //recvSink->SetRecvCallback (socketCb);
-
+ 
         if( recvSink->Bind ( r_local ) == -1)
         {
                 printf("Error in Bind\n");
@@ -631,7 +536,6 @@ void SmartNode::SetupNow (ns3::Ptr<SmartNode> smNode, ns3::Ipv4Address address)
 
 void SmartNode::SetupNow2 (ns3::Ipv4Address address)
 {
-	//ns3::Ptr<ns3::Socket> m_socket;
 	uint32_t ipTos = 0;
 	bool ipRecvTos = true;
 	uint32_t ipTtl = 0;
@@ -679,14 +583,10 @@ void SmartNode::SetupNow2 (ns3::Ipv4Address address)
 	//Setup Receiver
 	ns3::Ptr<ns3::Socket> recvSink = ns3::Socket::CreateSocket (node2, ns3::UdpSocketFactory::GetTypeId ());
 	ns3::InetSocketAddress r_local = ns3::InetSocketAddress (ns3::Ipv4Address::GetAny (), port);
-	//recvSink->SetIpRecvTos (ipRecvTos);
-	//recvSink->SetIpRecvTtl (ipRecvTtl);
 	
 	ns3::Callback<void, ns3::Ptr<ns3::Socket> > socketCb;
 
 	socketCb = ns3::MakeCallback (&SmartNode::ReceivePacket, smNode);
-	//socketCb = ns3::MakeCallback (Receive);
-	//recvSink->SetRecvCallback (socketCb);
 
 	if( recvSink->Bind ( r_local ) == -1)
         {
@@ -709,9 +609,6 @@ void SmartNode::SetupNow2 (ns3::Ipv4Address address)
 	
 
 	this->setSocket(smNode, std::pair <ns3::Ptr<ns3::Socket>,  ns3::InetSocketAddress * > (m_socket, &local));
-
-	//sizes = aSizes;
-	//times = aTimes;
 }
 
 void SmartProvider::Setup (ns3::Ipv4Address address, std::list<float> aTimes, std::list<int> aSizes)
@@ -740,12 +637,10 @@ void SmartProvider::Setup (ns3::Ipv4Address address, std::list<float> aTimes, st
 	m_dataRate =  ns3::DataRate ("1Mbps");
 	m_socket = ns3::Socket::CreateSocket (node, ns3::UdpSocketFactory::GetTypeId ());
 	r_socket = ns3::Socket::CreateSocket (node, ns3::UdpSocketFactory::GetTypeId ());
-	//recvSink->SetIpRecvTos (ipRecvTos);
-	//recvSink->SetIpRecvTtl (ipRecvTtl);
+
 	ns3::InetSocketAddress r_local = ns3::InetSocketAddress (ns3::Ipv4Address::GetAny (), 4477);
 	ns3::InetSocketAddress local = ns3::InetSocketAddress (address, 4478);
 	r_socket->SetRecvCallback (ns3::MakeCallback (&SmartNode::ReceivePacket, this));	
-	//r_socket->SetRecvCallback (ns3::MakeCallback (Receive));	
 
 	if (m_socket-> Bind(local) == -1)
 	{
@@ -826,7 +721,6 @@ SmartManager::SmartManager(ns3::Ptr<SmartGraph> graphIn, ns3::Ptr<SmartProtocol>
 	Graph = *graphIn;
 
 	graph = prot->Run(graphIn, talking_nodes);
-	//provider = Graph.getProvider();
 	graph2.insert(std::pair<int, ns3::Ptr<SmartGraph> > ((*(talking_nodes.begin()))->getMCloud(), graph));
  	
  	std::set<ns3::Ptr<SmartNode> > setNodes = graph->getNodes();
@@ -834,13 +728,8 @@ SmartManager::SmartManager(ns3::Ptr<SmartGraph> graphIn, ns3::Ptr<SmartProtocol>
  	int randomN = rand() % setNodes.size();
  	std::advance(it, randomN);
  	prov2.insert(std::pair<int, ns3::Ptr<SmartNode> > (this->getMCloud(), *it));
- 
- //	for (std::set<ns3::Ptr<SmartNode> >::iterator it2 = setNodes.begin(); it2 != setNodes.end(); ++it2)
- //	{
- //		(*it2)->Schedule_Send();
- //	}
- 
- 	provider = new SmartProvider((prov2.find(this->getMCloud())->second)->getNode());//graph->getProvider();
+  
+ 	provider = new SmartProvider((prov2.find(this->getMCloud())->second)->getNode());
 }
 
 SmartManager::SmartManager(ns3::Ptr<SmartGraph> graphIn, ns3::Ptr<SmartProtocol> prot, std::set< ns3::Ptr<SmartNode> > talking_nodes, int mcloud)
@@ -849,7 +738,7 @@ SmartManager::SmartManager(ns3::Ptr<SmartGraph> graphIn, ns3::Ptr<SmartProtocol>
         Graph = *graphIn;
  
         graph = prot->Run(graphIn, talking_nodes, mcloud);
-        //provider = Graph.getProvider();
+
 	if (graph->getNodes().size() > 0)
 	{
 		graph2.insert(std::pair<int, ns3::Ptr<SmartGraph> > (mcloud, graph));
@@ -862,7 +751,7 @@ SmartManager::SmartManager(ns3::Ptr<SmartGraph> graphIn, ns3::Ptr<SmartProtocol>
 	        std::advance(it, randomN);
 		prov2.erase(mcloud);
 	        prov2.insert(std::pair<int, ns3::Ptr<SmartNode> > (mcloud, *it));
-	        provider = new SmartProvider((*it)->getNode());//graph->getProvider();
+	        provider = new SmartProvider((*it)->getNode());
 	} 
 }
 
@@ -922,8 +811,6 @@ void SmartGraph::Migrate( ns3::Ptr<SmartMigration> migration )
 		if (it->second == REMOVE) {
 			this->removeEdge(it->first);
 		} 
-		//else 
-		//	printf("Nothing recognized\n");
 	}
 }
 
@@ -1104,11 +991,6 @@ ns3::Ptr<SmartPath> Network_Plan(ns3::Ptr<SmartNode> sourceNode, ns3::Ptr<SmartN
 						}
 					}
 				}
-			} else {
-				//path = new SmartPath();
-                                //path->addEdge(Graph.getEdge(sourceNode, *nodesNumberIt));
-                                //pathLenght = lenght + 1.0;
-				;
 			}
 		}
 	}
@@ -1120,10 +1002,6 @@ ns3::Ptr<SmartPath> Network_Plan(ns3::Ptr<SmartNode> sourceNode, ns3::Ptr<SmartN
                 	{
 				std::set< ns3::Ptr<SmartNode> > pathNodes = path->getNodes();
 				used_nodes.insert(pathNodes.begin(), pathNodes.end());
-					/*std::cout << "FINAL ";
-				for (std::set< ns3::Ptr<SmartNode> >::iterator it = pathNodes.begin(); it != pathNodes.end(); ++it)
-					std::cout << (*it)->findSmartNodeRef() << "-";
-				std::cout<< std::endl;*/
 			} else
 				std::cout << "EMPTY PATH"<< std::endl;
 		} else {
@@ -1137,7 +1015,7 @@ ns3::Ptr<SmartPath> Network_Plan(ns3::Ptr<SmartNode> sourceNode, ns3::Ptr<SmartN
 
 void SmartGraph::findPath (ns3::Ptr<SmartNode> n1, ns3::Ptr<SmartNode> n2)
 {
-/*	std::set< ns3::Ptr<SmartNode> > nodes (Graph.getNodes());
+	std::set< ns3::Ptr<SmartNode> > nodes (Graph.getNodes());
 	std::set< ns3::Ptr<SmartNode> > neig;
 	nodes.erase(n1);
 	ns3::Ptr<SmartNode> c_node = n1, aux_node, old_node;
@@ -1198,12 +1076,11 @@ void SmartGraph::findPath (ns3::Ptr<SmartNode> n1, ns3::Ptr<SmartNode> n2)
 			nodes.insert(c_node);
 		}
 	}
-*/
 }
 
 void SmartGraph::findPath (ns3::Ptr<SmartNode> n1, ns3::Ptr<SmartNode> n2, int edges, int nodes)
 {
-/*	ns3::Ptr<SmartEdge> pathAux;
+	ns3::Ptr<SmartEdge> pathAux;
 	std::set< ns3::Ptr<SmartPath> > result, pathsList, pathsSolution;
 	ns3::Ptr<SmartNode> toVisit;
 	float EC = std::numeric_limits<float>::max();
@@ -1253,27 +1130,7 @@ void SmartGraph::findPath (ns3::Ptr<SmartNode> n1, ns3::Ptr<SmartNode> n2, int e
 
 		findPath (toVisit, n2, edges + 1, nodes + 2);
 	}
-*/
 }
-
-/*ns3::Ptr<SmartGraph> SmartGraph::Delete (ns3::Ptr<SmartNode> node, ns3::Ptr<SmartProtocol> protocol)
-{
-	std::set< ns3::Ptr<SmartEdge> > edges = this->getEdges();
-	std::set< ns3::Ptr<SmartNode> > neigh = node->getNeighbors();
-	
-	for (std::set<  ns3::Ptr<SmartEdge> >::iterator it = edges.begin(); it != edges.end(); ++it) {
-		if (((*it)->getStructure()).node1 == node || ((*it)->getStructure()).node2 == node){
-			this->removeEdge(*it);
-		}
-	}
-
-	for (std::set< ns3::Ptr<SmartNode> >::iterator it2 = neigh.begin(); it2 != neigh.end(); ++it2)
-	{
-		(*it2)->delNeighbor(node);
-	}
-
-	return protocol ->Run(this, this->talking_nodes);
-}*/
 
 void SmartGraph::Delete (ns3::Ptr<SmartNode> node)
 {
@@ -1311,25 +1168,15 @@ ns3::Ptr<SmartMigration> SmartGraph::merge (ns3::Ptr<SmartNode> node)
 	
 	std::set< ns3::Ptr<SmartNode> > nodesChanged = node->getNeighbors();
 
-        // Destroy connections to reconnect them later
-//        for (it = nodesChanged.begin(); it != nodesChanged.end(); ++it)
-//	{
-//		if (*it != NULL)
-//			SmartGraphCopy->Delete(*it);
-//	}
-
 	std::set< ns3::Ptr<SmartNode> > nodesGraph = this->getNodes();      
 
 	pathLenght = std::numeric_limits<float>::max(); 
 
 	for (std::set< ns3::Ptr<SmartNode> >::iterator nodesIt = nodesGraph.begin(); nodesIt != nodesGraph.end(); ++nodesIt)
 	{
-		//visited_nodes.clear();
 		if (node != *nodesIt )
 		{
 			pathSol = Network_Plan(node, *nodesIt, true, visited_nodes, 0);
-			//pathSol = node->Find_Path ( *nodesIt, true, visited_nodes, 0 );
-			//pathSol = node->Find_Path ( *nodesIt, true, visited, 0 );
 	
 			if (!pathSol->getNodes().empty())
 			{
@@ -1361,51 +1208,7 @@ ns3::Ptr<SmartMigration> SmartGraph::merge (ns3::Ptr<SmartNode> node)
 		}
 	}
 
-/* 
-	// Reconnect neig (if needed)
-        it = nodesChanged.begin();
-       
-	while ( nodesChanged.size() > 0 )
-        {
-		it = nodesChanged.begin();
- 		std::advance(it, rand()%(nodesChanged.size()));
-
-		std::set<ns3::Ptr<SmartNode> > neig = (*it)->getNeighbors();
-		
-		for (it2 = neig.begin(); it2 != neig.end(); ++it2)
-		{
-			edgeAux = Graph.getEdge(*it, *it2);
-
-			if (edgeAux != NULL)
-			{
-				if(edgeAux->getConsumption() < ECAux)
-				{
-					ECAux = edgeAux->getConsumption();
-					edgeSol = ns3::Ptr<SmartEdge> (edgeAux);
-				}
-			}
-		}
-
-		ns3::Ptr<SmartMigration> mig;
-		if (edgeSol != NULL)
-		{
-			mig = new SmartMigration(edgeSol, ADD);
-	                if (mig == NULL)        
-	                        printf("Error in creation of migration\n");
-                        
-        		migration->add(mig);
-
-	                nodesChanged.erase(*it);
-        	        nodesChanged.erase(edgeSol->getNode2());
-		} else {
-			throw std::invalid_argument( "Error reconnecting neighbors" );
-		}
-	}
-
-	if (migration == NULL)
-		throw std::invalid_argument( "Empty migration in merge" );
-*/
-        return migration;
+	return migration;
 }
 
 
