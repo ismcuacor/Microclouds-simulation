@@ -12,9 +12,8 @@ std::map< Ptr<SmartNet::SmartNode>, int> Nodes;
 // Nodes which have lost their microcloud
 std::set< Ptr<SmartNet::SmartNode> > OrphanNodes;
 
+//Merge two microclouds (when the information is similar enough)
 std::pair < ns3::Ptr<SmartMigration>, std::set< ns3::Ptr<SmartGraph> > > mergeMicroclouds(ns3::Ptr<SmartGraph> microcloud, std::set< ns3::Ptr<SmartGraph> > microcloudsList);
-
-//static NetDeviceContainer **netdevicestable;
 
 class DEEPACC: public SmartProtocol 
 {
