@@ -1,0 +1,7 @@
+This file includes all code necessary to run GRaNADA (GReen Network-Aware clouD Architecture), a novel PaaS software architecture which targets real-time applications with a low geographical distribution of users. 
+To keep consistency, GRaNADA considers only one version of the data active at any time, i.e. only one replica of data is accessed and modified by the users. 
+Also, by keeping only one active copy of data, the use of the bandwidth is reduced. This is specially relevant in edge networks where the bandwidth is limited [254].
+GRaNADA creates a distributed Cloud which intends to reduce the number of devices involved in the computation and communication. Energy can be saved in the network by shutting down (e.g. as it is recommended in Juniper’s high availability design principles [255]) or downgrading (e.g. dynamic interfaces [256]) underutilized resources such as routers and switches. 
+At the same time, datacenters reduce their energy consumption because the computation is outsourced off the datacenters, thus allowing them to reduce active resources (e.g. servers).
+Finally, due to the proximity of the user to the Cloud, distance traveled by data is reduced compared to centralized approaches. In consequence, it is expected that latency in communications is also reduced. Distance can be also reduced compared to edge Clouds.
+Thus, latency is also expected to be reduced due to a lesser number of hops between users
