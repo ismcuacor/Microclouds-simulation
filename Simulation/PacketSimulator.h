@@ -125,11 +125,6 @@ class PacketSimulator: public ns3::Application
 
 			if (!path.empty())
 			{
-			//	for (std::set<Ptr<ns3::Node> >::iterator it = path.begin(); it != path.end(); it++)
-			//		if (*it == nodeObj) {
-			//			nodeObj = ndc -> Get(0) -> GetNode();
-			//		}
-
 				path.insert(nodeObj);
 			}
 
@@ -156,22 +151,6 @@ class PacketSimulator: public ns3::Application
 
         void Setup (ns3::Ipv4Address address, Ptr<Node> node,  std::list<float> aTimes, std::list<int> aSizes, int nodeId, int nodeDestId)
 	{
-            /*    for (int i = 0; i <= columns; i++)
-                         std::cout << i << "  ";
-
-                std::cout << "\n\n\n";
-
-                for (int i = 0; i <= rows; i++){
-                        std::cout << i << " | ";
-                        for (int j = 0; j <= 142; j++){
-                                std::cout << "|" << j << " -> "<< *(netdevicestable+(i*(columns+1) + j) ) << "|";
-
-                        }
-                        std::cout << "\n\n";
-                }
-std::cout << nodeId << std::endl;
-exit(-1);
-*/
                 std::set<int> visited;
 		
 		pathLenght = std::numeric_limits<int>::max(); 
@@ -251,7 +230,6 @@ exit(-1);
 			std::cout << "Error in package sending: " << m_socket->GetErrno() << std::endl;
 			if (m_socket -> GetErrno() == 3)
 				 std::cout << "Error in size: " << pkt -> GetSize() << std::endl;
-		//	exit(-1);
 	       }
         }
 
@@ -271,23 +249,14 @@ exit(-1);
 	{
 		std::list<float>::iterator itTime = times.begin();
 		std::list<int>::iterator itSize = sizes.begin();
-		//std::set<int> visited;
-
-//		Network_Plan (nodeId, nodeDestId, true, visited);
-//		Switch_On();
-
-//`		int i = 0;		
+		
 		for (int i = 0; i < (times.size() - 1) ; i++)
 		{
 			itTime++;
 			itSize++;
 			std::set<int> visited;
 
-        		//printf("%d %d %d\n", i, times.size() -1, times.size() -1 -i);
-//			i++;
-
 			ns3::Ptr<Packet> pkt = Create<Packet> (*itSize);
-			//std::cout << *itTime << " " << *itSize << std::endl;
                         ns3::Simulator::Schedule(Seconds (*itTime), &PacketSimulator::Send_Packet, this, pkt);
 		}
 	}
